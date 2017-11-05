@@ -55,18 +55,18 @@ class App extends React.Component {
     }
   }
   onRemoveTimer = (timerId) => {
-    let newTimers = [];
+    /* let newTimers = [];
     for(let i=0; i<this.state.timers.length; i++) {
       if(this.state.timers[i].id !== timerId) {
         newTimers.push(Object.assign({}, this.state.timers[i]));
       }
     }
-    this.setState({ timers: newTimers });
+    this.setState({ timers: newTimers }); */
 
-    /* // easier using filter
+    // easier using filter
     this.setState({
-      timers: this.state.timers.filter(t => t !== timerId)
-    }); */
+      timers: this.state.timers.filter(t => t.id !== timerId)
+    });
   }
 }
 
