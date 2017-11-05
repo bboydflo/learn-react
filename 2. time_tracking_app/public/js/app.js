@@ -25,6 +25,7 @@ class App extends React.Component {
             timers={this.state.timers}
             onFormSubmit={this.onFormSubmit}
             removeTimer={this.onRemoveTimer}
+            onToggleStart={this.onToggleStart}
           />
           <ToggleableTimerForm
             isOpen={false}
@@ -68,6 +69,25 @@ class App extends React.Component {
       timers: this.state.timers.filter(t => t.id !== timerId)
     });
   }
+  onToggleStart = (timerId) => {
+    console.log(`timer with id ${timerId} has been toggled`);
+    this.setState({
+      timers: this.state.timers.map(t => {
+        if(t.id === timerId) {
+          let wasRunning = t.runningSince ? true : false;
+          let elapsed = t.elapsed;
+          if(wasRunning) {
+            elapsed = t.elapsed + Date.now() - t.runningSince;
+          }
+          return Object.assign({}, t, {
+            elapsed,
+            runningSince: t.runningSince ? null : Date.now()
+          });
+        }
+        return t;
+      })
+    });
+  }
 }
 
 class EditableTimerList extends React.Component {
@@ -84,6 +104,7 @@ class EditableTimerList extends React.Component {
             runningSince={timer.runningSince}
             onFormSubmit={this.props.onFormSubmit}
             removeTimer={this.props.removeTimer}
+            onToggleStart={this.props.onToggleStart}
           />
         ))}
       </div>
@@ -117,6 +138,7 @@ class EditableTimer extends React.Component {
         runningSince = {this.props.runningSince}
         editTimer={this.editTimer}
         removeTimer={this.removeTimer}
+        onToggleStart={this.props.onToggleStart}
       />
     );
   }
@@ -240,7 +262,9 @@ class ToggleableTimerForm extends React.Component {
 
 class Timer extends React.Component {
   render() {
-    const elapsedString = helpers.renderElapsedString(this.props.elapsed);
+    const elapsedString = helpers.renderElapsedString(this.props.elapsed, this.props.runningSince);
+    const mainLabel = this.props.runningSince ? 'Stop' : 'Start';
+    const btnClass = this.props.runningSince ? 'red' : 'blue';
     return (
       <div className='ui centered card'>
         <div className='content'>
@@ -270,11 +294,23 @@ class Timer extends React.Component {
             </span>
           </div>
         </div>
-        <div className='ui bottom attached blue basic button'>
-          Start
+        <div
+          className={`ui bottom attached ${btnClass} basic button`}
+          onClick={this.onToggleStart}
+        >
+          {mainLabel}
         </div>
       </div>
     );
+  }
+  componentDidMount() {
+    this.forceUpdateInterval = setInterval(() => this.forceUpdate(), 50);
+  }
+  componentWillUnmount() {
+    clearInterval(this.forceUpdateInterval);
+  }
+  onToggleStart = () => {
+    this.props.onToggleStart(this.props.id);
   }
 }
 
